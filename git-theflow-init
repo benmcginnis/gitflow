@@ -157,7 +157,6 @@ cmd_default() {
 	# finally, ask the user for naming conventions (branch and tag prefixes)
 	if flag force || \
 	   ! git config --get gittheflow.prefix.topic >/dev/null 2>&1 ||
-	   ! git config --get gittheflow.prefix.release >/dev/null 2>&1 ||
 	   ! git config --get gittheflow.prefix.versiontag >/dev/null 2>&1; then
 		echo
 		echo "How to name your supporting branch prefixes?"
@@ -176,19 +175,6 @@ cmd_default() {
 		fi
 		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
 		git_do config gittheflow.prefix.topic "$prefix"
-	fi
-
-	# Release branches
-	if ! git config --get gittheflow.prefix.release >/dev/null 2>&1 || flag force; then
-		default_suggestion=$(git config --get gittheflow.prefix.release || echo release/)
-		printf "Release branches? [$default_suggestion] "
-		if noflag defaults; then
-			read answer
-		else
-			printf "\n"
-		fi
-		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
-		git_do config gittheflow.prefix.release "$prefix"
 	fi
 
 	# Version tag prefix

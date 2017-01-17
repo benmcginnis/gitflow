@@ -55,7 +55,6 @@ usage() {
 	echo "Available subcommands are:"
 	echo "   init      Initialize a new git repo with support for the branching model."
 	echo "   topic   Manage your topic branches."
-	echo "   release   Manage your release branches."
 	echo "   version   Shows version information."
 	echo
 	echo "Try 'git theflow <subcommand> help' for details."

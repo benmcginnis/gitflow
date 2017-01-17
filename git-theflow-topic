@@ -46,6 +46,7 @@ init() {
 usage() {
 	echo "usage: git theflow topic [list] [-v]"
 	echo "       git theflow topic start [-F] <name> [<base>]"
+  echo "       git theflow topic rc [-F] <name>"
 	echo "       git theflow topic finish [-rFkDS] [<name|nameprefix>]"
 	echo "       git theflow topic publish <name>"
 	echo "       git theflow topic track <name>"
@@ -227,6 +228,15 @@ cmd_start() {
 	echo ""
 	echo "     git theflow topic finish $NAME"
 	echo
+}
+
+cmd_rc() {
+  DEFINE_boolean fetch false 'fetch from origin before performing local operation' F
+  parse_args "$@"
+  BASE=${2:-$MASTER_BRANCH}
+  require_name_arg
+
+
 }
 
 cmd_finish() {

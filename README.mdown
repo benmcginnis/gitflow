@@ -94,7 +94,7 @@ those questions to accept the (sane) default suggestions.
 The ``-d`` flag will accept all defaults.
 
 
-### Creating topic/release branches
+### Creating topic branches
 
 * To list/start/finish topic branches, use:
 
@@ -108,11 +108,3 @@ The ``-d`` flag will accept all defaults.
 
   		git theflow topic publish <name>
 		  git theflow topic pull <remote> <name>
-
-* To list/start/finish release branches, use:
-
-  		git theflow release
-  		git theflow release start <release> [<base>]
-  		git theflow release finish <release>
-
-  For release branches, the `<base>` arg must be a commit on `master`.  

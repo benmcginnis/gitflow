@@ -21,7 +21,7 @@ if [ -z "$REPO_HOME" ] ; then
 fi
 
 EXEC_FILES="git-theflow"
-SCRIPT_FILES="git-theflow-init git-theflow-topic git-theflow-release git-theflow-version gittheflow-common gittheflow-shFlags"
+SCRIPT_FILES="git-theflow-init git-theflow-topic git-theflow-version gittheflow-common gittheflow-shFlags"
 SUBMODULE_FILE="gittheflow-shFlags"
 
 echo "### gittheflow no-make installer ###"

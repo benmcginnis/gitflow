@@ -172,7 +172,6 @@ gittheflow_has_master_configured() {
 
 gittheflow_has_prefixes_configured() {
 	git config --get gittheflow.prefix.topic >/dev/null 2>&1     && \
-	git config --get gittheflow.prefix.release >/dev/null 2>&1     && \
 	git config --get gittheflow.prefix.versiontag >/dev/null 2>&1
 }
 

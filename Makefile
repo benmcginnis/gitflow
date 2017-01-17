@@ -35,7 +35,6 @@ EXEC_FILES=git-theflow
 # files that need mode 644
 SCRIPT_FILES =git-theflow-init
 SCRIPT_FILES+=git-theflow-topic
-SCRIPT_FILES+=git-theflow-release
 SCRIPT_FILES+=git-theflow-version
 SCRIPT_FILES+=gittheflow-common
 SCRIPT_FILES+=gittheflow-shFlags
