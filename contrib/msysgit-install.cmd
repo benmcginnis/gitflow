@@ -14,31 +14,31 @@ exit /B 1
 :GitHomeOK
 set ERR=0
 
-echo Installing gitflow into "%GIT_HOME%"...
+echo Installing gittheflow into "%GIT_HOME%"...
 
 call :ChkGetopt getopt.exe || set ERR=1
 if %ERR%==1 goto :End
 echo getopt.exe... Found
 
-if not exist "%GIT_HOME%\bin\git-flow" goto :Install
-echo GitFlow is already installed.>&2
+if not exist "%GIT_HOME%\bin\git-theflow" goto :Install
+echo gittheflow is already installed.>&2
 set /p mychoice="Do you want to replace it [y/n]"
 if "%mychoice%"=="y" goto :DeleteOldFiles
 goto :Abort
 
 :DeleteOldFiles
 echo Deleting old files...
-for /F %%i in ("%GIT_HOME%\git-flow*" "%GIT_HOME%\gitflow-*") do if exist "%%~fi" del /F /Q "%%~fi"
+for /F %%i in ("%GIT_HOME%\git-theflow*" "%GIT_HOME%\gittheflow-*") do if exist "%%~fi" del /F /Q "%%~fi"
 
 :Install
 echo Copying files...
 ::goto :EOF
-xcopy "%~dp0\..\git-flow"            "%GIT_HOME%\bin"                 /Y /R /F
+xcopy "%~dp0\..\git-theflow"            "%GIT_HOME%\bin"                 /Y /R /F
 if errorlevel 4 if not errorlevel 5 goto :AccessDenied
 if errorlevel 1 set ERR=1
-xcopy "%~dp0\..\git-flow*"           "%GIT_HOME%\bin"                 /Y /R /F || set ERR=1
-xcopy "%~dp0\..\gitflow-*"           "%GIT_HOME%\bin"                 /Y /R /F || set ERR=1
-xcopy "%~dp0\..\shFlags\src\shflags" "%GIT_HOME%\bin\gitflow-shFlags" /Y /R /F || set ERR=1
+xcopy "%~dp0\..\git-theflow*"           "%GIT_HOME%\bin"                 /Y /R /F || set ERR=1
+xcopy "%~dp0\..\gittheflow-*"           "%GIT_HOME%\bin"                 /Y /R /F || set ERR=1
+xcopy "%~dp0\..\shFlags\src\shflags" "%GIT_HOME%\bin\gittheflow-shFlags" /Y /R /F || set ERR=1
 
 if %ERR%==1 choice /T 30 /C Y /D Y /M "Some unexpected errors happened. Sorry, you'll have to fix them by yourself."
 
@@ -66,7 +66,7 @@ if exist "%GIT_HOME%\bin\%1" goto :EOF
 if exist "%USERPROFILE%\bin\%1" goto :EOF
 if exist "%~f$PATH:1" goto :EOF
 echo %GIT_HOME%\bin\%1 not found.>&2
-echo You have to install this file manually. See the GitFlow README.
+echo You have to install this file manually. See the gittheflow README.
 exit /B 1
 
 :FindGitHome

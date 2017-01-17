@@ -1,0 +1,214 @@
+#
+# git-theflow -- A collection of Git extensions to provide high-level
+# repository operations for Vincent Driessen's branching model.
+#
+# Original blog post presenting this model is found at:
+#    http://nvie.com/git-model
+#
+# Feel free to contribute to this project at:
+#    http://github.com/nvie/gittheflow
+#
+# Copyright 2010 Vincent Driessen. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    1. Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#
+#    2. Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY VINCENT DRIESSEN ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL VINCENT DRIESSEN OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Vincent Driessen.
+#
+
+usage() {
+	echo "usage: git theflow init [-fd]"
+}
+
+parse_args() {
+	# parse options
+	FLAGS "$@" || exit $?
+	eval set -- "${FLAGS_ARGV}"
+}
+
+# Default entry when no SUBACTION is given
+cmd_default() {
+	DEFINE_boolean force false 'force setting of gittheflow branches, even if already configured' f
+	DEFINE_boolean defaults false 'use default branch naming conventions' d
+	parse_args "$@"
+
+	if ! git rev-parse --git-dir >/dev/null 2>&1; then
+		git_do init
+	else
+		# assure that we are not working in a repo with local changes
+		git_repo_is_headless || require_clean_working_tree
+	fi
+
+	# running git theflow init on an already initialized repo is fine
+	if gittheflow_is_initialized && ! flag force; then
+		warn "Already initialized for gittheflow."
+		warn "To force reinitialization, use: git theflow init -f"
+		exit 0
+	fi
+
+	local branch_count
+	local answer
+
+    if flag defaults; then
+        warn "Using default branch names."
+    fi
+
+	# add a master branch if no such branch exists yet
+	local master_branch
+	if gittheflow_has_master_configured && ! flag force; then
+		master_branch=$(git config --get gittheflow.branch.master)
+	else
+		# Two cases are distinguished:
+		# 1. A fresh git repo (without any branches)
+		#    We will create a new master branch for the user
+		# 2. Some branches do already exist
+		#    We will disallow creation of new master branch and
+		#    rather allow to use existing branches for git-theflow.
+		local default_suggestion
+		local should_check_existence
+		branch_count=$(git_local_branches | wc -l)
+		if [ "$branch_count" -eq 0 ]; then
+			echo "No branches exist yet. Base branches must be created now."
+			should_check_existence=NO
+			default_suggestion=$(git config --get gittheflow.branch.master || echo master)
+		else
+			echo
+			echo "Which branch should be used for bringing forth production releases?"
+			git_local_branches | sed 's/^.*$/   - &/g'
+
+			should_check_existence=YES
+			default_suggestion=
+			for guess in $(git config --get gittheflow.branch.master) \
+			             'production' 'main' 'master'; do
+				if git_local_branch_exists "$guess"; then
+					default_suggestion="$guess"
+					break
+				fi
+			done
+		fi
+
+		printf "Branch name for production releases: [$default_suggestion] "
+		if noflag defaults; then
+			read answer
+		else
+			printf "\n"
+		fi
+		master_branch=${answer:-$default_suggestion}
+
+		# check existence in case of an already existing repo
+		if [ "$should_check_existence" = "YES" ]; then
+			# if no local branch exists and a remote branch of the same
+			# name exists, checkout that branch and use it for master
+			if ! git_local_branch_exists "$master_branch" && \
+				git_remote_branch_exists "origin/$master_branch"; then
+				git_do branch "$master_branch" "origin/$master_branch" >/dev/null 2>&1
+			elif ! git_local_branch_exists "$master_branch"; then
+				die "Local branch '$master_branch' does not exist."
+			fi
+		fi
+
+		# store the name of the master branch
+		git_do config gittheflow.branch.master "$master_branch"
+	fi
+
+	# Creation of HEAD
+	# ----------------
+	# We create a HEAD now, if it does not exist yet (in a fresh repo). We need
+	# it to be able to create new branches.
+	local created_gittheflow_branch=0
+	if ! git rev-parse --quiet --verify HEAD >/dev/null 2>&1; then
+		git_do symbolic-ref HEAD "refs/heads/$master_branch"
+		git_do commit --allow-empty --quiet -m "Initial commit"
+		created_gittheflow_branch=1
+	fi
+
+	# Creation of master
+	# ------------------
+	# At this point, there always is a master branch: either it existed already
+	# (and was picked interactively as the production branch) or it has just
+	# been created in a fresh repo
+
+
+	# assert the gittheflow repo has been correctly initialized
+	gittheflow_is_initialized
+
+	# TODO: switch to master if not currently on it
+
+	# finally, ask the user for naming conventions (branch and tag prefixes)
+	if flag force || \
+	   ! git config --get gittheflow.prefix.topic >/dev/null 2>&1 ||
+	   ! git config --get gittheflow.prefix.release >/dev/null 2>&1 ||
+	   ! git config --get gittheflow.prefix.versiontag >/dev/null 2>&1; then
+		echo
+		echo "How to name your supporting branch prefixes?"
+	fi
+
+	local prefix
+
+	# topic branches
+	if ! git config --get gittheflow.prefix.topic >/dev/null 2>&1 || flag force; then
+		default_suggestion=$(git config --get gittheflow.prefix.topic || echo topic/)
+		printf "topic branches? [$default_suggestion] "
+		if noflag defaults; then
+			read answer
+		else
+			printf "\n"
+		fi
+		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
+		git_do config gittheflow.prefix.topic "$prefix"
+	fi
+
+	# Release branches
+	if ! git config --get gittheflow.prefix.release >/dev/null 2>&1 || flag force; then
+		default_suggestion=$(git config --get gittheflow.prefix.release || echo release/)
+		printf "Release branches? [$default_suggestion] "
+		if noflag defaults; then
+			read answer
+		else
+			printf "\n"
+		fi
+		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
+		git_do config gittheflow.prefix.release "$prefix"
+	fi
+
+	# Version tag prefix
+	if ! git config --get gittheflow.prefix.versiontag >/dev/null 2>&1 || flag force; then
+		default_suggestion=$(git config --get gittheflow.prefix.versiontag || echo "")
+		printf "Version tag prefix? [$default_suggestion] "
+		if noflag defaults; then
+			read answer
+		else
+			printf "\n"
+		fi
+		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
+		git_do config gittheflow.prefix.versiontag "$prefix"
+	fi
+
+
+	# TODO: what to do with origin?
+}
+
+cmd_help() {
+	usage
+	exit 0
+}

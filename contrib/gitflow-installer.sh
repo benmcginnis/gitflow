@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# git-flow make-less installer for *nix systems, by Rick Osborne
-# Based on the git-flow core Makefile:
-# http://github.com/nvie/gitflow/blob/master/Makefile
+# git-theflow make-less installer for *nix systems, by Rick Osborne
+# Based on the git-theflow core Makefile:
+# http://github.com/nvie/gittheflow/blob/master/Makefile
 
-# Licensed under the same restrictions as git-flow:
-# http://github.com/nvie/gitflow/blob/develop/LICENSE
+# Licensed under the same restrictions as git-theflow:
+# http://github.com/nvie/gittheflow/blob/develop/LICENSE
 
 # Does this need to be smarter for each host OS?
 if [ -z "$INSTALL_PREFIX" ] ; then
@@ -13,22 +13,22 @@ if [ -z "$INSTALL_PREFIX" ] ; then
 fi
 
 if [ -z "$REPO_NAME" ] ; then
-	REPO_NAME="gitflow"
+	REPO_NAME="gittheflow"
 fi
 
 if [ -z "$REPO_HOME" ] ; then
-	REPO_HOME="http://github.com/nvie/gitflow.git"
+	REPO_HOME="http://github.com/nvie/gittheflow.git"
 fi
 
-EXEC_FILES="git-flow"
-SCRIPT_FILES="git-flow-init git-flow-feature git-flow-hotfix git-flow-release git-flow-support git-flow-version gitflow-common gitflow-shFlags"
-SUBMODULE_FILE="gitflow-shFlags"
+EXEC_FILES="git-theflow"
+SCRIPT_FILES="git-theflow-init git-theflow-topic git-theflow-release git-theflow-version gittheflow-common gittheflow-shFlags"
+SUBMODULE_FILE="gittheflow-shFlags"
 
-echo "### gitflow no-make installer ###"
+echo "### gittheflow no-make installer ###"
 
 case "$1" in
 	uninstall)
-		echo "Uninstalling git-flow from $INSTALL_PREFIX"
+		echo "Uninstalling git-theflow from $INSTALL_PREFIX"
 		if [ -d "$INSTALL_PREFIX" ] ; then
 			for script_file in $SCRIPT_FILES $EXEC_FILES ; do
 				echo "rm -vf $INSTALL_PREFIX/$script_file"
@@ -41,7 +41,7 @@ case "$1" in
 		exit
 		;;
 	help)
-		echo "Usage: [environment] gitflow-installer.sh [install|uninstall]"
+		echo "Usage: [environment] gittheflow-installer.sh [install|uninstall]"
 		echo "Environment:"
 		echo "   INSTALL_PREFIX=$INSTALL_PREFIX"
 		echo "   REPO_HOME=$REPO_HOME"
@@ -49,7 +49,7 @@ case "$1" in
 		exit
 		;;
 	*)
-		echo "Installing git-flow to $INSTALL_PREFIX"
+		echo "Installing git-theflow to $INSTALL_PREFIX"
 		if [ -d "$REPO_NAME" -a -d "$REPO_NAME/.git" ] ; then
 			echo "Using existing repo: $REPO_NAME"
 		else

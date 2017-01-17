@@ -8,11 +8,11 @@ if [ $# -ne 1 ]; then
 	exit 1
 fi
 
-if ! sed 's/^GITFLOW_VERSION=.*$/GITFLOW_VERSION='$1'/g' git-flow-version > .git-flow-version.new; then
-	echo "Could not replace GITFLOW_VERSION variable." >&2
+if ! sed 's/^gittheflow_VERSION=.*$/gittheflow_VERSION='$1'/g' git-theflow-version > .git-theflow-version.new; then
+	echo "Could not replace gittheflow_VERSION variable." >&2
 	exit 2
 fi
 
-mv .git-flow-version.new git-flow-version
-git add git-flow-version
-git commit -m "Bumped version number to $1" git-flow-version
+mv .git-theflow-version.new git-theflow-version
+git add git-theflow-version
+git commit -m "Bumped version number to $1" git-theflow-version
